@@ -16,8 +16,8 @@ st.set_page_config(page_title= "Clustering academico",
 st.sidebar.image("https://actoressostenibles.com/wp-content/uploads/2019/08/Logos-15-17-03.png")
 st.title(":blue[Trabajo de Integración Curricular]")
 st.subheader(':male-detective: _Identificación de patrones en base a información académica de estudiantes aplicando algoritmos de Aprendizaje Automático._ ')
-data = pd.read_csv('data_completa copy.csv')
-dataframe = pd.read_csv("data_completa copy.csv")
+data = pd.read_csv('data_completa.csv')
+dataframe = pd.read_csv("data_completa.csv")
 
 st.sidebar.header(':mag: :blue[Filtros Dinamicos]')
 
@@ -37,7 +37,13 @@ with st.sidebar:
     selected_vegan_option = st.selectbox(":blue[**Seleccione el ciclo academico:**]", ["All"] + list(filtered_data["ciclo_academico"].unique()))
     if selected_vegan_option != "All":
         filtered_data = filtered_data[filtered_data["ciclo_academico"] == selected_vegan_option]
-
+    st.write(":blue[**Descarge la información:**]")
+    st.download_button(
+    label="Descargar .csv",
+    data=filtered_data.to_csv(),
+    file_name="Información de estudiantes.csv",
+    mime="text/csv",
+)
 
 fig = px.scatter(filtered_data, x="Componente_1", y="Componente_2", color="cluster", 
                 color_continuous_scale='Inferno', template="simple_white",
@@ -46,7 +52,7 @@ fig = px.scatter(filtered_data, x="Componente_1", y="Componente_2", color="clust
                     "porcentaje_des_matricula": "Porcentaje de descuento de la matricula", 
                     "monto_descuento_automatico": "Monto de descuento automatico", 
                     "cluster": "Desempeño academico"},
-                title= "Grafica de todos los estudiantes en los Grupos generados por el Modelo")
+                title= "Gráfica de todos los estudiantes en los Grupos generados por el Modelo")
 
 
 fig4 = px.scatter(filtered_data, x="bim1_nota_fundamentos_de_tecnologias", 
@@ -110,6 +116,25 @@ with col2:
     st.plotly_chart(fig4, use_container_width=True)
     st.plotly_chart(fig2, use_container_width=True)
 
+# Crear una lista con las variables disponibles
+variables_y = ["bim1_nota_algoritmos_y_resolucion_de_pro",
+               "bim1_nota_fundamentos_de_tecnologias",
+               "bim1_nota_computacion_y_sociedad",
+               "bim1_nota_metodologia_de_la_invest_y_tec",
+               "bim1_nota_humanismo,_universidad_y_cultu",
+               "bim1_nota_fundamentos_matematicos"]
+
+# Crear una lista con los nombres de las variables
+nombres_variables = ["Notas de algoritmos y resolución de problemas", "Notas de fundamentos de tecnologías", "Notas de computación y sociedad", "Notas de metodología de la investigación y tecnología"]
+
+# Crear el selector
+variable_y = st.selectbox("Seleccione la materia en específico:", variables_y)
+
+# Crear la gráfica
+fig3 = px.bar(filtered_data, x="cluster", y=variable_y, color="cluster", title="Estado de los estudiantes por grupo")
+
+# Mostrar la gráfica
+st.plotly_chart(fig3, use_container_width=True)
 
 st.write('------------------------------------------')
 st.write('Dashboard creado por: Hernán Sánchez')
