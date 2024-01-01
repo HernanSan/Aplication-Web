@@ -93,8 +93,8 @@ try:
     col1, col2, col3, col4 = st.columns(4)
     col1.metric(":orange[**Desempeño Bueno**]", conteos[0], "Estudiantes")
     col2.metric(":green[**Desempeño Regular**]", conteos[1], "Estudiantes", delta_color="off")
-    col3.metric(":red[**Desempeño Critico**]", conteos[2], "-Estudiantes")
-    col4.metric(":blue[**Incierto**]", conteos[3], "-Estudiantes sin calificaciones",  delta_color="off")
+    col3.metric(":red[**Desempeño Critico**]", conteos[3], "-Estudiantes")
+    col4.metric(":blue[**Incierto**]", conteos[2], "-Estudiantes sin calificaciones",  delta_color="off")
 except IndexError:
     # No hacer nada
     pass
