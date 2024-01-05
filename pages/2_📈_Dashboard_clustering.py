@@ -6,43 +6,14 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_option_menu import option_menu
 from streamlit_extras.app_logo import add_logo
-from fpdf import FPDF
-import base64
-import os
-import io
-from PIL import Image
 
 st.set_page_config(page_title= "Clustering academico",
-    page_icon="📈",
+    page_icon="🤖",
     layout= "wide", 
     initial_sidebar_state='expanded'
 )
 
-file = open("marca UTPL 2018-01.png", "rb")
-contents = file.read()
-img_str = base64.b64encode(contents).decode("utf-8")
-buffer = io.BytesIO()
-file.close()
-img_data = base64.b64decode(img_str)
-img = Image.open(io.BytesIO(img_data))
-resized_img = img.resize((200, 75))  # x, y
-resized_img.save(buffer, format="PNG")
-img_b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-st.markdown(
-        f"""
-        <style>
-            [data-testid="stSidebarNav"] {{
-                background-image: url('data:image/png;base64,{img_b64}');
-                background-repeat: no-repeat;
-                padding-top: 45px;
-                background-position: 40px 50px;
-            }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
+st.sidebar.image("https://actoressostenibles.com/wp-content/uploads/2019/08/Logos-15-17-03.png")
 st.title(":blue[Trabajo de Integración Curricular]")
 st.subheader(':male-detective: _Identificación de patrones en base a información académica de estudiantes aplicando algoritmos de Aprendizaje Automático._ ')
 data = pd.read_csv('data_completa.csv')
@@ -67,21 +38,12 @@ with st.sidebar:
     if selected_vegan_option != "All":
         filtered_data = filtered_data[filtered_data["ciclo_academico"] == selected_vegan_option]
     st.write(":blue[**Descarge la información:**]")
-    
-    # Dividir el espacio en dos columnas
-    col1, col2 = st.columns(2, gap="small")
-    # Establecer estilo CSS para alinear a la izquierda
-    with col1:
-        st.download_button(
-            label="Descargar .csv",
-            data=filtered_data.to_csv(),
-            file_name="Información de estudiantes.csv",
-            mime="text/csv",
-        )
-    with col2:
-        export_as_pdf = st.button("Generar PDF")
-    
-
+    st.download_button(
+    label="Descargar .csv",
+    data=filtered_data.to_csv(),
+    file_name="Información de estudiantes.csv",
+    mime="text/csv",
+)
 
 fig = px.scatter(filtered_data, x="Componente_1", y="Componente_2", color="cluster", 
                 color_continuous_scale='Inferno', template="simple_white",
@@ -131,9 +93,8 @@ try:
     col1, col2, col3, col4 = st.columns(4)
     col1.metric(":orange[**Desempeño Bueno**]", conteos[0], "Estudiantes")
     col2.metric(":green[**Desempeño Regular**]", conteos[1], "Estudiantes", delta_color="off")
-    col3.metric(":red[**Desempeño Critico**]", conteos[3], "-Estudiantes")
-    col4.metric(":blue[**Incierto**]", conteos[2], "-Estudiantes sin calificaciones",  delta_color="off")
-    
+    col3.metric(":red[**Desempeño Critico**]", conteos[2], "-Estudiantes")
+    col4.metric(":blue[**Incierto**]", conteos[3], "-Estudiantes sin calificaciones",  delta_color="off")
 except IndexError:
     # No hacer nada
     pass
@@ -175,59 +136,6 @@ fig3 = px.bar(filtered_data, x="cluster", y=variable_y, color="cluster", title="
 # Mostrar la gráfica
 st.plotly_chart(fig3, use_container_width=True)
 
-
-
-def create_download_link(val, filename):
-    b64 = base64.b64encode(val)  # val looks like b'...'
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
-
-if export_as_pdf:
-    # Crear un objeto PDF
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-
-    # Añadir una página
-    pdf.add_page()
-
-    # Configurar el título del PDF
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, txt="Reporte del Dashboard de Clustering Académico", ln=True, align="C")
-    
-    
-    # Guardar los conteos en el PDF
-    pdf.ln(2)  # Ajusta este valor según sea necesario para el espaciado deseado
-    pdf.set_font("Arial", size=11)
-    pdf.multi_cell(0, 10, f"Desempeño Bueno: {conteos[0]} Estudiantes")
-    pdf.multi_cell(0, 10, f"Desempeño Regular: {conteos[1]} Estudiantes")
-    pdf.multi_cell(0, 10, f"Desempeño Critico: {conteos[3]} Estudiantes")
-    pdf.multi_cell(0, 10, f"Incierto: {conteos[2]} Estudiantes sin calificaciones")
-    
-# Descargar cada gráfica y añadirla al PDF
-    for i, fig in enumerate([fig, fig1, fig4, fig2, fig3]):
-        # Guardar la figura como una imagen temporal
-        img_path = f"temp_img_{i}.png"
-        fig.write_image(img_path)
-
-        # Añadir la imagen al PDF
-        # Colocar dos gráficas una al lado de la otra
-        if i % 2 == 0:
-            pdf.image(img_path, x=10, y=pdf.get_y(), w=90)
-        else:
-            pdf.image(img_path, x=100, y=pdf.get_y(), w=90)
-            pdf.ln(70)  # Hacer el salto de línea después de dos gráficas
-
-        # Eliminar la imagen temporal después de usarla
-        os.remove(img_path)
-
-    # Convertir el PDF a bytes
-    pdf_bytes = pdf.output(dest="S").encode("latin-1")
-    # Crear el enlace de descarga
-    st.download_button(
-        label="Descargar PDF",
-        data=pdf_bytes,
-        file_name="dashboard_clustering_academico.pdf",
-        key="download_pdf"
-    )
-    
 st.write('------------------------------------------')
 st.write('Dashboard creado por: Hernán Sánchez')
+
